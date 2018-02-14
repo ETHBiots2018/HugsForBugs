@@ -28,14 +28,13 @@ contract VotingSystem {
         return votings.length;
     }
     
-    function createVoting(string title, string description, uint minimum) public  {
+    function createVoting(string title, string description) public  {
         // removed require from function, to allow proposed votings to be created
         // we can discuss tomorrow if this is secure enough
-        require(msg.sender == manager || checkIfProposal(title,description,minimum));
+        require(msg.sender == manager || checkIfProposal(title,description));
         Voting memory newVoting = Voting({
             title: title, 
             description: description,
-            minimumContribution: minimum,
             complete: false,
             approvalCount: 0, 
             rejectionCount: 0
@@ -80,18 +79,16 @@ contract VotingSystem {
     struct Proposal {
         string title;
         string description;
-        uint minimumContribution;
         uint needApprovals;
         bool complete;
         uint numberOfApprovals;
         mapping(address => bool) alreadyJoined;
     } 
 
-    function createProposal(string title, string description, uint minimum) public {
+    function createProposal(string title, string description) public {
         Proposal memory newProposal = Proposal({
             title: title, 
             description: description,
-            minimumContribution: minimum,
             complete: false,
             needApprovals: 2, 
             numberOfApprovals: 0
@@ -110,13 +107,12 @@ contract VotingSystem {
 
     function supportProposal(uint index) public payable {
         Proposal storage proposal = proposals[index];
-        require(msg.value >= proposal.minimumContribution);
         require(proposal.alreadyJoined[msg.sender] ==false);
         proposal.alreadyJoined[msg.sender] = true;
         proposal.numberOfApprovals++;
 
         if(checkProposalStatus(index)){
-            createVoting(proposal.title, proposal.description, proposal.minimumContribution);
+            createVoting(proposal.title, proposal.description);
             //TODO: remove Proposal from List?
         }
 
@@ -131,10 +127,10 @@ contract VotingSystem {
     }
 
 
-    function checkIfProposal(string title, string description, uint minimum) private view returns (bool) {
+    function checkIfProposal(string title, string description) private view returns (bool) {
         for (uint i = 0; i < proposals.length; i++) {
             Proposal storage proposal = proposals[i];
-            if(keccak256(proposal.title)==keccak256(title) && keccak256(proposal.description)==keccak256(description) && proposal.minimumContribution==minimum){
+            if(keccak256(proposal.title)==keccak256(title) && keccak256(proposal.description)==keccak256(description)){
                 return true;
             }
         }
