@@ -67,8 +67,5 @@ contract VotingSystem {
         } else {
             voting.rejectionCount++;
         }
-    }
-    
-    
-    
+    }    
 }
