@@ -40,11 +40,11 @@ contract VotingSystem {
         votings.push(newVoting);
     }
     
-    function getVotingData(uint index) public view returns (string){
+    function getVotingData(uint index) public view returns (string) {
         return votings[index].title;
     }
     
-    function enableVoting(address voter) public restricted{
+    function enableVoting(address voter) public restricted {
         voters[voter] = true;
     }
     
@@ -67,5 +67,14 @@ contract VotingSystem {
         } else {
             voting.rejectionCount++;
         }
-    }    
+    }
+
+    //******************** USE THE WithSender FUNCTIONS *****************************//
+
+
+    function voteFor(uint index, address _for, bool value) public {
+    }   
+
+    function transferVote(uint index, address _to) public {
+    } 
 }
