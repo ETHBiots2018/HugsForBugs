@@ -1,0 +1,25 @@
+{
+  "name": "hugsforbugs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/skaan/HugsForBugs.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/skaan/HugsForBugs/issues"
+  },
+  "homepage": "https://github.com/skaan/HugsForBugs#readme",
+  "dependencies": {
+    "ganache-cli": "^6.0.3",
+    "mocha": "^5.0.1",
+    "solc": "^0.4.19",
+    "web3": "^1.0.0-beta.30"
+  }
+}
