@@ -24,8 +24,16 @@ contract VotingSystem {
         manager = msg.sender;
     }
     
-    function createVoting() public {
+    function createVoting(string title, string description) public restricted {
+        Voting memory newVoting = Voting({
+            title: title, 
+            description: description,
+            complete: false,
+            approvalCount: 0, 
+            rejectionCount: 0
+        });
         
+        votings.push(newVoting);
     }
     
 }
