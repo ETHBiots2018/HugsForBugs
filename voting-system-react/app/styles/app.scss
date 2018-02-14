@@ -1,0 +1,13 @@
+// Import Base
+@import "base/variables";
+
+@import "components/landing-screen";
+@import "components/dashboard-screen";
+@import "components/settings-screen";
+
+// Import Components
+.container-fluid.container-main {
+	margin-top: 56px;
+	padding: 0;
+	padding-top: 15px;
+}
