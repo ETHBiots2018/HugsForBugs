@@ -35,6 +35,7 @@ contract VotingSystem {
         uint yesVotes;
         uint noVotes;
     }
+
     
     // system storage
     Voting[] public votings;
@@ -90,6 +91,14 @@ contract VotingSystem {
         });
         
         votings.push(newVoting);
+    }
+
+    function finalizeVoting(uint index) public restricted returns (uint, uint, uint) {
+        Voting storage voting = votings[index];
+        require(now > voting.endTime);
+        voting.complete = true;
+
+        return(voting.maxVoterCount, voting.approvalCount, voting.rejectionCount);
     }
     
     function enableVoter(address voter) public restricted {
