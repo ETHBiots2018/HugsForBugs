@@ -4,7 +4,7 @@ pragma solidity ^0.4.18;
 interface tokenRecipient { function receiveApproval(address _from, uint256 _value, address _token, bytes _extraData) public; }
 
 // ERC20 Token Standard
-contract TokenERC20 {
+contract Token {
     
     string public name;
     string public symbol;
@@ -25,7 +25,7 @@ contract TokenERC20 {
     // This notifies clients about the amount burnt
     event Burn(address indexed from, uint256 value);
 
-    function TokenERC20 (uint256 initialSupply, string tokenName, string tokenSymbol) 
+    function Token (uint256 initialSupply, string tokenName, string tokenSymbol) 
         public {
         totalSupply = initialSupply * 10 ** uint256(decimals);  
         balanceOf[msg.sender] = totalSupply;                

@@ -13,18 +13,12 @@ contract VotingSystem {
         uint rejectionCount;
         TokenERC20 token;
         mapping(address => bool) voters;
-        mapping(address => voteCounter) votes;
-    }
-
-    // Tuple substitute
-    struct voteCounter {
-        uint yesVotes;
-        uint noVotes;
     }
     
     struct Proposal {
         string title;
         string description;
+        address manager;
         uint needApprovals;
         bool complete;
         uint numberOfApprovals;
@@ -63,11 +57,8 @@ contract VotingSystem {
         return votings.length;
     }
     
-    function createVoting(string title, string description) public {
-        // removed require from function, to allow proposed votings to be created
-        // we can discuss tomorrow if this is secure enough
-        require(msg.sender == manager); // || checkIfProposal(title,description)
-        
+    function createVoting(string title, string description) public restricted {
+      
         TokenERC20 newToken = new TokenERC20(votersCount, "VoteCoin", "VTC");
         Voting memory newVoting = Voting({
             title: title, 
@@ -110,38 +101,10 @@ contract VotingSystem {
         // update voting counter
         if (value) {
             voting.approvalCount++;
-            voting.votes[msg.sender].yesVotes++;
         } else {
             voting.rejectionCount++;
-            voting.votes[msg.sender].noVotes++;
         }
     }
-    
-    function changeVote (uint index, bool fromValue, bool toValue) public {
-        // if you change vote to the same, nothing happens
-        require(fromValue != toValue);
-
-        Voting storage voting = votings[index];
-        require(voting.voters[msg.sender]);
-        
-        if (fromValue == true) {
-            // toValue has to be false at this point
-            // person has to have a yes vote to revert
-            require(voting.votes[msg.sender].yesVotes >= 1);
-            voting.votes[msg.sender].yesVotes--;
-            voting.votes[msg.sender].noVotes++;
-            voting.approvalCount--;
-            voting.rejectionCount++;
-        } else {
-            // same as above but vice versa
-            require(voting.votes[msg.sender].noVotes >= 1);
-            voting.votes[msg.sender].noVotes--;
-            voting.votes[msg.sender].yesVotes++;
-            voting.rejectionCount--;
-            voting.approvalCount++;
-        }
-    }
-    
     
     function voteFor(uint _index, address _for, bool _value) public {
         Voting storage voting = votings[_index];
@@ -159,10 +122,8 @@ contract VotingSystem {
         // update voting counter
         if (_value) {
             voting.approvalCount++;
-            voting.votes[_for].yesVotes++;
         } else {
             voting.rejectionCount++;
-            voting.votes[_for].noVotes++;
         }
     }   
 
@@ -194,6 +155,7 @@ contract VotingSystem {
         Proposal memory newProposal = Proposal({
             title: title, 
             description: description,
+            manager: msg.sender,
             complete: false,
             needApprovals: minimum, 
             numberOfApprovals: 0
@@ -205,6 +167,7 @@ contract VotingSystem {
     function createVotingForProposal(uint _index) public {
         Proposal storage proposal = proposals[_index];
         
+        require(proposal.manager == msg.sender);
         require(proposal.numberOfApprovals >= proposal.needApprovals);
         
         TokenERC20 newToken = new TokenERC20(votersCount, "VoteCoin", "VTC");
@@ -231,32 +194,11 @@ contract VotingSystem {
         
         proposal.alreadyJoined[msg.sender] = true;
         proposal.numberOfApprovals++;
-
-        // -------------- creation should be restricted to proposal manager (why should i pay for proposal creation) ?
-        if(checkProposalStatus(index)){
-            createVoting(proposal.title, proposal.description);
-            //TODO: remove Proposal from List?
-        }
     }
     
-    // issue, how can the proposal be created via restricted createVoting-function
-    // Solution: remove restricted and instead do the checking manually.
-    function checkProposalStatus(uint index) public view returns (bool) {
+    function checkProposalStatus (uint index) public view returns (bool) {
         Proposal storage proposal = proposals[index];
-        return (proposal.numberOfApprovals >= proposal.needApprovals);
+        bool result = proposal.numberOfApprovals > proposal.needApprovals;
+        return result;
     }
-
-    function checkIfProposal(string title, string description) private view returns (bool) {
-        
-        // -------------- maybe we have sometime hundreds or thousands of proposals for voting costly to scale here??
-        for (uint i = 0; i < proposals.length; i++) {
-            Proposal storage proposal = proposals[i];
-            if(keccak256(proposal.title)==keccak256(title) && keccak256(proposal.description)==keccak256(description)){
-                return true;
-            }
-        }
-
-        return false;
-    }
-    
 }

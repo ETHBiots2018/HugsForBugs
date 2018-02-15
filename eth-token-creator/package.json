@@ -1,0 +1,33 @@
+{
+  "name": "eth-token-creator",
+  "version": "1.0.0",
+  "description": "Create and deploy a customized  ERC20 Token to a ethereum network of your choice.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/skaan/eth-token-creator.git"
+  },
+  "keywords": [
+    "ethereum",
+    "token",
+    "erc20",
+    "create",
+    "compile",
+    "deploy",
+    "custom",
+    "coin"
+  ],
+  "author": "Kaan Sentürk <skaan@student.ethz.ch> (https://github.com/skaan)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/skaan/eth-token-creator/issues"
+  },
+  "homepage": "https://github.com/skaan/eth-token-creator#readme",
+  "dependencies": {
+    "solc": "^0.4.20",
+    "web3": "^1.0.0-beta.26"
+  }
+}
