@@ -56,10 +56,10 @@ contract VotingSystem {
         return votings.length;
     }
     
-    function createVoting(string title, string description) public {
+    function createVoting(string title, string description) public restricted {
         // removed require from function, to allow proposed votings to be created
         // we can discuss tomorrow if this is secure enough
-        require(msg.sender == manager); // || checkIfProposal(title,description)
+        //require(msg.sender == manager); // || checkIfProposal(title,description)
         
         TokenERC20 newToken = new TokenERC20(votersCount, "VoteCoin", "VTC");
         Voting memory newVoting = Voting({
@@ -194,31 +194,18 @@ contract VotingSystem {
         proposal.alreadyJoined[msg.sender] = true;
         proposal.numberOfApprovals++;
 
-        // -------------- creation should be restricted to proposal manager (why should i pay for proposal creation) ?
-        if(checkProposalStatus(index)){
-            createVoting(proposal.title, proposal.description);
-            //TODO: remove Proposal from List?
-        }
     }
     
     // issue, how can the proposal be created via restricted createVoting-function
-    // Solution: remove restricted and instead do the checking manually.
-    function checkProposalStatus(uint index) public view returns (bool) {
-        Proposal storage proposal = proposals[index];
-        return (proposal.numberOfApprovals >= proposal.needApprovals);
-    }
-
-    function checkIfProposal(string title, string description) private view returns (bool) {
-        
-        // -------------- maybe we have sometime hundreds or thousands of proposals for voting costly to scale here??
+    // Solution: Button for Manager, checkProposalStatus
+    function checkProposalStatus public restricted{
         for (uint i = 0; i < proposals.length; i++) {
             Proposal storage proposal = proposals[i];
-            if(keccak256(proposal.title)==keccak256(title) && keccak256(proposal.description)==keccak256(description)){
-                return true;
+            if(proposal.numberOfApprovals >= proposal.needApprovals){
+                createVoting(proposal.title, proposal.description);
             }
         }
-
-        return false;
     }
+
     
 }
