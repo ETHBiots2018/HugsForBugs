@@ -27,9 +27,9 @@ contract VotingSystem {
     // system storage
     Voting[] public votings;
     Proposal[] public proposals;
-    address manager;
-    uint votersCount;
-    mapping(address => bool) voters;
+    address public manager;
+    uint public votersCount;
+    mapping(address => bool) public voters;
     
     modifier restricted() {
         require(msg.sender == manager);
@@ -75,6 +75,7 @@ contract VotingSystem {
     }
     
     function enableVoting(address voter) public restricted {
+        require(!voters[voter]);
         votersCount++;
         voters[voter] = true;
     }
