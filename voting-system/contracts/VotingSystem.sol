@@ -198,7 +198,7 @@ contract VotingSystem {
     
     // issue, how can the proposal be created via restricted createVoting-function
     // Solution: Button for Manager, checkProposalStatus
-    function checkProposalStatus public restricted{
+    function checkProposalStatus() public restricted{
         for (uint i = 0; i < proposals.length; i++) {
             Proposal storage proposal = proposals[i];
             if(proposal.numberOfApprovals >= proposal.needApprovals){
