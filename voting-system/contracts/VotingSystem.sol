@@ -13,6 +13,13 @@ contract VotingSystem {
         uint rejectionCount;
         TokenERC20 token;
         mapping(address => bool) voters;
+        mapping(address => voteCounter) votes;
+    }
+
+    // Tuple substitute
+    struct voteCounter {
+        uint yesVotes;
+        uint noVotes;
     }
     
     struct Proposal {
@@ -103,10 +110,38 @@ contract VotingSystem {
         // update voting counter
         if (value) {
             voting.approvalCount++;
+            voting.votes[msg.sender].yesVotes++;
         } else {
             voting.rejectionCount++;
+            voting.votes[msg.sender].noVotes++;
         }
     }
+    
+    function changeVote (uint index, bool fromValue, bool toValue) public {
+        // if you change vote to the same, nothing happens
+        require(fromValue != toValue);
+
+        Voting storage voting = votings[index];
+        require(voting.voters[msg.sender]);
+        
+        if (fromValue == true) {
+            // toValue has to be false at this point
+            // person has to have a yes vote to revert
+            require(voting.votes[msg.sender].yesVotes >= 1);
+            voting.votes[msg.sender].yesVotes--;
+            voting.votes[msg.sender].noVotes++;
+            voting.approvalCount--;
+            voting.rejectionCount++;
+        } else {
+            // same as above but vice versa
+            require(voting.votes[msg.sender].noVotes >= 1);
+            voting.votes[msg.sender].noVotes--;
+            voting.votes[msg.sender].yesVotes++;
+            voting.rejectionCount--;
+            voting.approvalCount++;
+        }
+    }
+    
     
     function voteFor(uint _index, address _for, bool _value) public {
         Voting storage voting = votings[_index];
@@ -124,8 +159,10 @@ contract VotingSystem {
         // update voting counter
         if (_value) {
             voting.approvalCount++;
+            voting.votes[_for].yesVotes++;
         } else {
             voting.rejectionCount++;
+            voting.votes[_for].noVotes++;
         }
     }   
 
