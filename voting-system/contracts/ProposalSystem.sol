@@ -77,18 +77,18 @@ contract ProposalSystem {
     }
 
     function showProposalApproval (uint index) public view returns (uint){
-        proposal storage proposal = proposals[index];
+        Proposal storage proposal = proposals[index];
         return proposal.numberOfApprovals;
     }
 
     function showProposalDeadline (uint index) public view returns (uint){
-        proposal storage proposal = proposals[index];
+        Proposal storage proposal = proposals[index];
         require(now <= proposal.endTime);
         return (proposal.endTime-now);
     }
 
     function showProposalApprovalNeeded (uint index) public view returns (uint){
-        proposal storage proposal = proposals[index];
+        Proposal storage proposal = proposals[index];
         return proposal.needApprovals;
     }
 }
