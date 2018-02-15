@@ -3,8 +3,9 @@ pragma solidity ^0.4.18;
 
 interface tokenRecipient { function receiveApproval(address _from, uint256 _value, address _token, bytes _extraData) public; }
 
+// ERC20 Token Standard
 contract TokenERC20 {
-    // Public variables of the token
+    
     string public name;
     string public symbol;
     uint8 public decimals = 0;
@@ -13,6 +14,10 @@ contract TokenERC20 {
     // This creates an array with all balances
     mapping (address => uint256) public balanceOf;
     mapping (address => mapping (address => uint256)) public allowance;
+    
+    function getBalance(address target) public view returns (uint256) {
+        return balanceOf[target];
+    }
 
     // This generates a public event on the blockchain that will notify clients
     event Transfer(address indexed from, address indexed to, uint256 value);
@@ -20,21 +25,12 @@ contract TokenERC20 {
     // This notifies clients about the amount burnt
     event Burn(address indexed from, uint256 value);
 
-    /**
-     * Constructor function
-     *
-     * Initializes contract with initial supply tokens to the creator of the contract
-     */
-    function TokenERC20(
-        uint256 initialSupply,
-        string tokenName,
-        string tokenSymbol
-    ) public 
-    {
-        totalSupply = initialSupply * 10 ** uint256(decimals);  // Update total supply with the decimal amount
-        balanceOf[msg.sender] = totalSupply;                // Give the creator all initial tokens
-        name = tokenName;                                   // Set the name for display purposes
-        symbol = tokenSymbol;                               // Set the symbol for display purposes
+    function TokenERC20 (uint256 initialSupply, string tokenName, string tokenSymbol) 
+        public {
+        totalSupply = initialSupply * 10 ** uint256(decimals);  
+        balanceOf[msg.sender] = totalSupply;                
+        name = tokenName;                                  
+        symbol = tokenSymbol;                               
     }
 
     /**
@@ -49,10 +45,10 @@ contract TokenERC20 {
         require(balanceOf[_to] + _value > balanceOf[_to]);
         // Save this for an assertion in the future
         uint previousBalances = balanceOf[_from] + balanceOf[_to];
-        // Subtract from the sender
+        
         balanceOf[_from] -= _value;
-        // Add the same to the recipient
         balanceOf[_to] += _value;
+        
         Transfer(_from, _to, _value);
         // Asserts are used to use static analysis to find bugs in your code. They should never fail
         assert(balanceOf[_from] + balanceOf[_to] == previousBalances);
@@ -193,9 +189,9 @@ contract TokenERC20 {
 
     function burnFromWithSender(address sender, address _from, uint256 _value) public returns (bool success) {
         require(balanceOf[_from] >= _value);                // Check if the targeted balance is enough
-        require(_value <= allowance[_from][sender]);    // Check allowance
+        require(_value <= allowance[_from][sender]);        // Check allowance
         balanceOf[_from] -= _value;                         // Subtract from the targeted balance
-        allowance[_from][sender] -= _value;             // Subtract from the sender's allowance
+        allowance[_from][sender] -= _value;                 // Subtract from the sender's allowance
         totalSupply -= _value;                              // Update totalSupply
         Burn(_from, _value);
         return true;

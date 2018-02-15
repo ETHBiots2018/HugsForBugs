@@ -1,18 +1,23 @@
 pragma solidity ^0.4.18;
 
+import "./TokenERC20.sol";
+
 contract VotingSystem {
+    
     struct Voting {
         string title;
         string description;
         bool complete;
         uint approvalCount;
         uint rejectionCount;
-        mapping(address => uint) token;
+        TokenERC20 token;
         mapping(address => bool) voters;
     }
     
+
     Voting[] public votings;
     address manager;
+    uint votersCount;
     mapping(address => bool) voters;
     
     modifier restricted() {
@@ -28,26 +33,26 @@ contract VotingSystem {
         return votings.length;
     }
     
-    function createVoting(string title, string description) public  {
+    function createVoting(string title, string description) public {
         // removed require from function, to allow proposed votings to be created
         // we can discuss tomorrow if this is secure enough
         require(msg.sender == manager || checkIfProposal(title,description));
+        
+        TokenERC20 newToken = new TokenERC20(votersCount, "VoteCoin", "VTC");
         Voting memory newVoting = Voting({
             title: title, 
             description: description,
             complete: false,
             approvalCount: 0, 
-            rejectionCount: 0
+            rejectionCount: 0, 
+            token: newToken
         });
         
         votings.push(newVoting);
     }
     
-    function getVotingData(uint index) public view returns (string) {
-        return votings[index].title;
-    }
-    
     function enableVoting(address voter) public restricted {
+        votersCount++;
         voters[voter] = true;
     }
     
@@ -55,22 +60,70 @@ contract VotingSystem {
         require(voters[msg.sender]);
         Voting storage voting = votings[index];
         require(!voting.voters[msg.sender]);
-        voting.token[msg.sender] = 1;
+        voting.token.transfer(msg.sender, 1);
         voting.voters[msg.sender] = true;
     }
     
     function vote(uint index, bool value) public {
         Voting storage voting = votings[index];
-        require(voting.voters[msg.sender]);
-        require(voting.token[msg.sender] >= 1);
         
-        voting.token[msg.sender] -= 1;
+        // right and balance requirements
+        uint256 currentBalance = voting.token.getBalance(msg.sender);
+        require(voting.voters[msg.sender]);
+        require(currentBalance >= 1);
+        
+        // update token
+        bool success = voting.token.burnWtihSender(msg.sender, 1);
+        require(success);
+
+        // update voting counter
         if (value) {
             voting.approvalCount++;
         } else {
             voting.rejectionCount++;
         }
     }
+    
+    function voteFor(uint _index, address _for, bool _value) public {
+        Voting storage voting = votings[_index];
+        
+        // check rights and balance
+        uint256 currentBalance = voting.token.getBalance(_for);
+        require(voting.voters[_for]);
+        require(voting.voters[msg.sender]);
+        require(currentBalance >= 1);
+        
+        // update token
+        bool success = voting.token.burnFromWithSender(msg.sender, _for, 1);
+        require(success);
+
+        // update voting counter
+        if (_value) {
+            voting.approvalCount++;
+        } else {
+            voting.rejectionCount++;
+        }
+    }   
+
+    /**
+     * Allows `_to` to spend a vote token on your behalf
+     *
+     * @param _index voting index for vote transfer
+     * @param _to address authorized to spend vote
+     */
+     
+    function transferVote(uint _index, address _to) public {
+        Voting storage voting = votings[_index];
+        
+        // check rights and balance
+        uint256 currentBalance = voting.token.getBalance(msg.sender);
+        require(voting.voters[_to]);
+        require(voting.voters[msg.sender]);
+        require(currentBalance >= 1);
+        
+        // set transfer/allowance
+        voting.token.approveWithSender(msg.sender, _to, 1);
+    } 
 
     //******************** Code for Vote Proposal for non-manager *****************************//
 
@@ -115,8 +168,6 @@ contract VotingSystem {
             createVoting(proposal.title, proposal.description);
             //TODO: remove Proposal from List?
         }
-
-
     }
     
     // issue, how can the proposal be created via restricted createVoting-function
@@ -137,14 +188,5 @@ contract VotingSystem {
 
         return false;
     }
-
-
-    //******************** USE THE WithSender FUNCTIONS *****************************//
-
-
-    function voteFor(uint index, address _for, bool value) public {
-    }   
-
-    function transferVote(uint index, address _to) public {
-    } 
+    
 }
