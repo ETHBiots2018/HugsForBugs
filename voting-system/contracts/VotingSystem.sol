@@ -8,14 +8,16 @@ contract VotingSystem {
     struct Voting {
         string title;
         string description;
-        bool complete;
         uint approvalCount;
         uint rejectionCount;
+        uint maxVoterCount;
+        uint balance;
         TokenERC20 token;
-        mapping(address => bool) voters;
-        mapping(address => voteCounter) votes;
         uint endTime;
+        bool complete;
         bool transferVoteAllowed;
+        mapping(address => bool) voters;
+        mapping(address => VoteCounter) votes;
     }
     
     struct Proposal {
@@ -29,7 +31,7 @@ contract VotingSystem {
         uint endTime;
     } 
 
-    struct voteCounter {
+    struct VoteCounter {
         uint yesVotes;
         uint noVotes;
     }
@@ -68,7 +70,7 @@ contract VotingSystem {
     
     // duration is time in seconds for which voting is open
     // transferVoteAllowed specifies if votes can be transfered to another person
-    function createVoting(string title, string description, uint duration, bool _transferVoteAllowed) public restricted {
+    function createVoting(string title, string description, uint duration, bool _transferVoteAllowed) public restricted payable {
       
         //overflow check
         require(now <= now + duration);
@@ -77,11 +79,13 @@ contract VotingSystem {
         Voting memory newVoting = Voting({
             title: title,
             description: description,
-            complete: false,
             approvalCount: 0,
             rejectionCount: 0,
+            maxVoterCount: votersCount,
+            balance: msg.value,
             token: newToken,
             endTime: now + duration,
+            complete: false,
             transferVoteAllowed: _transferVoteAllowed
         });
         
@@ -124,6 +128,9 @@ contract VotingSystem {
             voting.rejectionCount++;
             voting.votes[msg.sender].noVotes++;
         }
+        
+        // payment if any balance
+        msg.sender.transfer(voting.balance / voting.maxVoterCount);
     }
     
     function voteFor(uint _index, address _for, bool _value) public {
@@ -149,6 +156,9 @@ contract VotingSystem {
             voting.rejectionCount++;
             voting.votes[_for].noVotes++;
         }
+        
+        // payment if any balance
+        msg.sender.transfer(voting.balance / voting.maxVoterCount);
     }  
 
     function changeVote (uint index, bool fromValue, bool toValue) public {
@@ -221,7 +231,7 @@ contract VotingSystem {
     
     // duration is time in seconds for which voting is open
     // transferVoteAllowed specifies if votes can be transfered to another person
-    function createVotingForProposal(uint _index, uint duration, bool _transferVoteAllowed) public {
+    function createVotingForProposal(uint _index, uint duration, bool _transferVoteAllowed) public payable {
         Proposal storage proposal = proposals[_index];
         require(now <= proposal.endTime);
         //overflow check
@@ -234,11 +244,13 @@ contract VotingSystem {
         Voting memory newVoting = Voting({
             title: proposal.title,
             description: proposal.description,
-            complete: false,
             approvalCount: 0,
             rejectionCount: 0,
+            maxVoterCount: votersCount,
+            balance: msg.value,
             token: newToken,
             endTime: now + duration,
+            complete: false,
             transferVoteAllowed: _transferVoteAllowed
         });
         
