@@ -1,0 +1,219 @@
+Testcases
+
+Note: ME stands for Managing Entity
+
+Voting System: 
+
+    Create Vote as ME when Voters are defined
+        Expected Result: creates Vote
+        Check Status: ok
+
+    Create Vote as ME when no Voters are defined
+        Expected Result: fails
+        Check Status: ok
+
+    Create Vote as User when no Voters are defined
+        Expected Result: fails
+        Check Status: ok
+
+    Create Vote as User when Voters are defined
+        Expected Result: fails
+        Check Status: ok
+
+    Enable Voter as ME:
+        Expected Result: Voter in voters set to true
+        Check Status: ok
+
+    Enable Voter as User:
+        Expected Result: fails
+        Check Status: ok
+
+    Enter Voting as enabled User:
+        Expected Result: voter now authorized to vote (receives a token)
+        Check Status: ok
+
+    Enter Voting as non-enabled User:
+        Expected Result: fails
+        Check Status: ok
+
+    Vote when Token is received & User enabled:
+        Expected Result: vote is counted 
+        Check Status: ok
+
+    Vote when Token is not received & User enabled:
+        Expected Result: fails
+        Check Status: ok
+
+    Vote when Token is not received & User not-enabled:
+        Expected Result: fails
+        Check Status: ok
+
+    changeVote of enabled User when no Vote was cast (every type of change):
+        Expected Result: fails
+        Check Status: ok
+
+    changeVote of enabled User with Token when same Vote was cast (true):
+        Expected Result: fails
+        Check Status: ok
+
+    changeVote of enabled User with Token when same Vote was cast (false):
+        Expected Result: fails
+        Check Status: ok
+
+    changeVote of enabled User with Token when opposing Vote was cast (false -> true):
+        Expected Result: should change vote
+        Check Status: ok
+
+    changeVote of enabled User with Token when opposing Vote was cast (true -> false) :
+        Expected Result: should change vote
+        Check Status: ok
+
+    transferVote of non-enabled User without Token to non-enabled User without Token:
+        Expected Result: fails
+        Check Status: ok
+
+    transferVote of enabled User without Token to non-enabled User without Token:
+        Expected Result: fails
+        Check Status:
+
+    transferVote of enabled User with Token to non-enabled User without Token:
+        Expected Result: fails
+        Check Status:
+
+    transferVote of non-enabled User without Token to enabled User without Token:
+        Expected Result: fails
+        Check Status: ok
+
+    transferVote of enabled User without Token to enabled User without Token:
+        Expected Result: fails
+        Check Status:
+
+    transferVote of enabled User with Token to enabled User without Token:
+        Expected Result: fails
+        Check Status:
+
+    transferVote of non-enabled User without Token to enabled User with Token:
+        Expected Result: fails
+        Check Status: ok
+
+    transferVote of enabled User without Token to enabled User with Token:
+        Expected Result: fails
+        Check Status: ok
+
+    transferVote of enabled User with Token to enabled User with Token:
+        Expected Result: second user can now cast vote for first user
+        Check Status: ok
+
+    voteFor of non-enabled User without Token to non-enabled User without Token:
+        Expected Result: fails
+        Check Status: ok
+
+    voteFor of enabled User without Token to non-enabled User without Token:
+        Expected Result: fails
+        Check Status: ok
+
+    voteFor of enabled User with Token to non-enabled User without Token:
+        Expected Result: fails
+        Check Status: ok
+
+    voteFor of non-enabled User without Token to enabled User without Token:
+        Expected Result: fails
+        Check Status: ok
+
+    voteFor of enabled User without Token to enabled User without Token:
+        Expected Result: fails
+        Check Status: ok
+
+    voteFor of enabled User with Token to enabled User without Token:
+        Expected Result: fails
+        Check Status: ok
+
+    voteFor of non-enabled User without Token to enabled User with Token:
+        Expected Result: fails
+        Check Status: ok
+
+    voteFor of enabled User without Token to enabled User with Token:
+        Expected Result: fails
+        Check Status: ok
+
+    voteFor of enabled User with Token to enabled User with Token:
+        Expected Result: first user should now use Token of second User to cast vote
+        Check Status: ok
+
+    Call finalizeVoting as ME before endtime has passed
+        Expected Result: fails
+        Check Status: ok
+
+    Call finalizeVoting as ME when endtime has passed
+        Expected Result: voting complete is set to true, token balance is cleared, and voting results are released
+        Check Status: ok
+
+    Call finalizeVoting as User before endtime has passed
+        Expected Result: fails
+        Check Status: ok
+
+    Call finalizeVoting as User when endtime has passed
+        Expected Result: fails
+        Check Status: ok
+
+    Call clearBalance as User
+        Expected Result: fails
+        Check Status: ok
+
+    Call clearBalance as ME
+        Expected Result: transfers balance of token to ME
+        Check Status: ok
+
+    Vote was created with Vote-Transfer=False
+        Expected Result: Vote-Transfer between to enabled Users with Tokens fails
+        Check Status: ok
+
+
+
+Proposal System
+
+    Create Proposal as User
+        Expected Result: proposal gets created
+        Check Status: ok
+
+    supportProposal as User
+        Expected Result: numberOfApprovals for proposal increased by 1
+        Check Status: ok
+
+    supportProposal as User twice
+        Expected Result: first time: numberOfApprovals for proposal increased by 1, second time: fails
+        Check Status: ok
+
+    run createVotingForProposal as ME when Approvals > Needed Approvals
+        Expected Result: vote gets created
+        Check Status:
+
+    run createVotingForProposal as ME when Approvals = Needed Approvals
+        Expected Result: vote gets created
+        Check Status:
+
+    run createVotingForProposal as ME when Approvals < Needed Approvals
+        Expected Result: fails
+        Check Status: ok
+
+    run createVotingForProposal as User when Approvals > Needed Approvals
+        Expected Result: fails
+        Check Status: ok
+
+    run createVotingForProposal as User when Approvals = Needed Approvals
+        Expected Result: fails
+        Check Status: ok
+
+    run createVotingForProposal as User when Approvals < Needed Approvals
+        Expected Result: fails
+        Check Status: ok
+
+
+
+
+
+
+
+
+
+

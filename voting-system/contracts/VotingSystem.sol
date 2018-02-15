@@ -27,10 +27,13 @@ contract VotingSystem {
     }
     
     // system storage
-    Voting[] private votings;
-    address private manager;
-    uint private votersCount;
-    mapping(address => bool) private voters;
+    // note: for debugging/testing purposes these were set to public, 
+    // but for a productive implementation these should be set to private
+    // left here public, because testing was done with them on public.
+    Voting[] public votings;
+    address public manager;
+    uint public votersCount;
+    mapping(address => bool) public voters;
     
     modifier restricted() {
         require(msg.sender == manager);
@@ -225,6 +228,7 @@ contract VotingSystem {
     function transferVote(uint _index, address _to) public {
         Voting storage voting = votings[_index];
         require(now <= voting.endTime);
+        require(voting.transferVoteAllowed);
         
         // check rights and balance
         uint256 currentBalance = voting.token.getBalance(msg.sender);

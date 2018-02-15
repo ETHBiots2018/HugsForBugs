@@ -16,8 +16,11 @@ contract ProposalSystem {
         uint endTime;
     } 
     
-    VotingSystem private vSytem;
-    Proposal[] private proposals;
+    // note: for debugging/testing purposes these were set to public, 
+    // but for a productive implementation these should be set to private
+    // left here public, because testing was done with them on public.
+    VotingSystem public vSytem;
+    Proposal[] public proposals;
     
     function ProposalSystem(address _vsystem) public {
         vSytem = VotingSystem(_vsystem);
@@ -66,6 +69,10 @@ contract ProposalSystem {
         
         proposal.alreadyJoined[msg.sender] = true;
         proposal.numberOfApprovals++;
+
+        if(proposal.numberOfApprovals>=proposal.needApprovals){
+            proposal.complete=true;
+        }
     }
     
     function checkProposalStatus (uint index) public view returns (bool) {
