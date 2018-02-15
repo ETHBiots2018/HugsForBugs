@@ -92,11 +92,32 @@ contract VotingSystem {
         votings.push(newVoting);
     }
     
-    function enableVoting(address voter) public restricted {
+    function enableVoter(address voter) public restricted {
         require(!voters[voter]);
         votersCount++;
         voters[voter] = true;
     }
+
+    // we chose not to include this as it would give the owner power to manipulate
+    // a vote
+    /*function disableVoter(address voter, uint index) {
+        require(voters[voter]);
+        votersCount--;
+        voters[voter] = false;
+
+        Voting storage voting = votings[index];
+        require(now <= voting.endTime);
+        uint yesCount = voting.votes[voter].yesVotes;
+        uint noCount = voting.votes[voter].noVotes;
+
+        // reset voters vote counts
+        voting.votes[voter].yesVotes = 0;
+        voting.votes[voter].noVotes = 0;
+
+        // revert a voters votes
+        voting.approvalCount -= yesCount;
+        voting.rejectionCount -= noCount;
+    }*/
     
     function enterVoting(uint index) public payable {
         require(voters[msg.sender]);
