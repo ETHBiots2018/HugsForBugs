@@ -1,5 +1,7 @@
 "use strict";
 
+import Web3 from 'web3';
+
 module.exports = {
 	name: '', 
 	symbol: '', 
@@ -20,10 +22,10 @@ module.exports = {
 		return this;
 	}, 
 	setProvider: (provider, callback) => {
-
+		
 	}, 
 	compile: () => {
-
+		
 	}, 
 	deploy: () => {
 

@@ -13,6 +13,7 @@ contract VotingSystem {
         uint rejectionCount;
         TokenERC20 token;
         mapping(address => bool) voters;
+        mapping(address => voteCounter) votes;
         uint endTime;
         bool transferVoteAllowed;
     }
@@ -27,6 +28,11 @@ contract VotingSystem {
         mapping(address => bool) alreadyJoined;
         uint endTime;
     } 
+
+    struct voteCounter {
+        uint yesVotes;
+        uint noVotes;
+    }
     
     // system storage
     Voting[] public votings;
@@ -113,8 +119,10 @@ contract VotingSystem {
         // update voting counter
         if (value) {
             voting.approvalCount++;
+            voting.votes[msg.sender].yesVotes++;
         } else {
             voting.rejectionCount++;
+            voting.votes[msg.sender].noVotes++;
         }
     }
     
@@ -136,10 +144,37 @@ contract VotingSystem {
         // update voting counter
         if (_value) {
             voting.approvalCount++;
+            voting.votes[_for].yesVotes++;
         } else {
             voting.rejectionCount++;
+            voting.votes[_for].noVotes++;
         }
-    }   
+    }  
+
+    function changeVote (uint index, bool fromValue, bool toValue) public {
+         // if you change vote to the same, nothing happens
+         require(fromValue != toValue);
+ 
+         Voting storage voting = votings[index];
+         require(voting.voters[msg.sender]);
+         
+         if (fromValue == true) {
+             // toValue has to be false at this point
+             // person has to have a yes vote to revert
+             require(voting.votes[msg.sender].yesVotes >= 1);
+             voting.votes[msg.sender].yesVotes--;
+             voting.votes[msg.sender].noVotes++;
+            voting.approvalCount--;
+             voting.rejectionCount++;
+         } else {
+             // same as above but vice versa
+             require(voting.votes[msg.sender].noVotes >= 1);
+             voting.votes[msg.sender].noVotes--;
+             voting.votes[msg.sender].yesVotes++;
+             voting.rejectionCount--;
+             voting.approvalCount++;
+         }
+     } 
 
     /**
      * Allows `_to` to spend a vote token on your behalf
