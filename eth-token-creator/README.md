@@ -1,6 +1,4 @@
-# eth-token-creator
-
-From Hackaton: [BIOTS2018](http://biots.org/)
+## eth-token-creator [BIOTS2018](http://biots.org/)()
 
 ### Installation
 

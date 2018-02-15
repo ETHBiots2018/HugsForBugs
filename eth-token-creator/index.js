@@ -1,34 +1,31 @@
-"use strict";
+const Web3 = require('web3');
+const path = require('path');
+const fs = require('fs');
+const solc = require('solc');
 
-import Web3 from 'web3';
+// setting providers
+exports.setProvider = function(provider) {
+	exports.provider = provider;
+}
 
-module.exports = {
-	name: '', 
-	symbol: '', 
-	initialSupply: 0, 
-	decimals: 18,
-	provider: null,
-	create: (config, callback) => {
-		if (config.name == null) callback('Please define a name for your token in your configuration.');
-		else name = config.name;
+exports.compile = async function() {
+	const tokenPath = path.resolve(__dirname, 'contracts', 'Token.sol');
+	const source = fs.readFileSync(tokenPath, 'utf8');
+	const result = await solc.compile(source, 1).contracts[':Token'];
+	exports.interface = result.interface;
+	exports.bytecode = result.bytecode;
+	return { interface: result.interface, bytecode: result.bytecode };
+}
 
-		if (config.symbol == null) callback('Please define a symbol for your token in your configuration.');
-		else symbol = config.symbol;
+exports.deploy = async function({ name, symbol, initialSupply, gas  }) {
+	const web3 = new Web3(exports.provider);
+	accounts = await web3.eth.getAccounts();
 
-		if (config.initialSupply == null) callback('Please a initial supply for your token in your configuration.');
-		else initialSupply = config.initialSupply;
-				
-		decimals = config.decimals;
-		return this;
-	}, 
-	setProvider: (provider, callback) => {
-		
-	}, 
-	compile: () => {
-		
-	}, 
-	deploy: () => {
+	const result = await new web3.eth.Contract(JSON.parse(exports.interface)).deploy({ data: exports.bytecode, arguments: [initialSupply, name, symbol] }).send({ gas, from: accounts[0]});
+	const address = result.options.address;
+	const token = new web3.eth.Contract(JSON.parse(exports.interface), result.options.address);
 
-	}
-
+	exports.address = address;
+	exports.token = token;
+	return token;
 }

@@ -1,6 +1,6 @@
 {
   "name": "eth-token-creator",
-  "version": "1.0.0",
+  "version": "1.0.16",
   "description": "Create and deploy a customized  ERC20 Token to a ethereum network of your choice.",
   "main": "index.js",
   "scripts": {
