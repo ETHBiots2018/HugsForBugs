@@ -27,10 +27,10 @@ contract VotingSystem {
     }
     
     // system storage
-    Voting[] public votings;
-    address public manager;
-    uint public votersCount;
-    mapping(address => bool) public voters;
+    Voting[] private votings;
+    address private manager;
+    uint private votersCount;
+    mapping(address => bool) private voters;
     
     modifier restricted() {
         require(msg.sender == manager);
@@ -67,7 +67,7 @@ contract VotingSystem {
     // Voting Functions
     // =====================================
     
-    function getVotingsCount() public view returns (uint) {
+    function getVotingsCount() public view restricted returns (uint) {
         return votings.length;
     }
     

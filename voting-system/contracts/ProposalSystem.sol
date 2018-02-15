@@ -16,8 +16,8 @@ contract ProposalSystem {
         uint endTime;
     } 
     
-    VotingSystem public vSytem;
-    Proposal[] public proposals;
+    VotingSystem private vSytem;
+    Proposal[] private proposals;
     
     function ProposalSystem(address _vsystem) public {
         vSytem = VotingSystem(_vsystem);
@@ -42,13 +42,13 @@ contract ProposalSystem {
         proposals.push(newProposal);
     }
     
-    function createVotingForProposal(uint _index, uint duration, bool _transferVoteAllowed) public payable {
+    function createVotingForProposal(uint _index, uint duration, bool _transferVoteAllowed) restricted public payable {
         Proposal storage proposal = proposals[_index];
         require(now <= proposal.endTime);
         //overflow check
         require(now <= now + duration);
         
-        require(proposal.manager == msg.sender);
+        //require(proposal.manager == msg.sender);
         require(proposal.numberOfApprovals >= proposal.needApprovals);
         
         vSytem.createVoting(proposal.title, proposal.description, duration, _transferVoteAllowed);
@@ -74,5 +74,21 @@ contract ProposalSystem {
 
         bool result = proposal.numberOfApprovals > proposal.needApprovals;
         return result;
+    }
+
+    function showProposalApproval (uint index) public view returns (uint){
+        proposal storage proposal = proposals[index];
+        return proposal.numberOfApprovals;
+    }
+
+    function showProposalDeadline (uint index) public view returns (uint){
+        proposal storage proposal = proposals[index];
+        require(now <= proposal.endTime);
+        return (proposal.endTime-now);
+    }
+
+    function showProposalApprovalNeeded (uint index) public view returns (uint){
+        proposal storage proposal = proposals[index];
+        return proposal.needApprovals;
     }
 }
