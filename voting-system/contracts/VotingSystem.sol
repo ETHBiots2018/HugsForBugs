@@ -14,6 +14,7 @@ contract VotingSystem {
         TokenERC20 token;
         mapping(address => bool) voters;
         uint endTime;
+        bool transferVoteAllowed;
     }
     
     struct Proposal {
@@ -60,7 +61,8 @@ contract VotingSystem {
     }
     
     // duration is time in seconds for which voting is open
-    function createVoting(string title, string description, uint duration) public restricted {
+    // transferVoteAllowed specifies if votes can be transfered to another person
+    function createVoting(string title, string description, uint duration, bool _transferVoteAllowed) public restricted {
       
         //overflow check
         require(now <= now + duration);
@@ -73,7 +75,8 @@ contract VotingSystem {
             approvalCount: 0,
             rejectionCount: 0,
             token: newToken,
-            endTime: now + duration
+            endTime: now + duration,
+            transferVoteAllowed: _transferVoteAllowed
         });
         
         votings.push(newVoting);
@@ -118,6 +121,7 @@ contract VotingSystem {
     function voteFor(uint _index, address _for, bool _value) public {
         Voting storage voting = votings[_index];
         require(now <= voting.endTime);
+        require(voting.transferVoteAllowed);
         
         // check rights and balance
         uint256 currentBalance = voting.token.getBalance(_for);
@@ -162,7 +166,7 @@ contract VotingSystem {
     // Proposal functions
     // =====================================
     
-    // duration is time in seconds for which voting is open
+    // duration is time in seconds for which proposal is open
     function createProposal(string title, string description, uint minimum, uint duration) public {
         //overflow check
         require(now <= now + duration);
@@ -180,7 +184,9 @@ contract VotingSystem {
         proposals.push(newProposal);
     }
     
-    function createVotingForProposal(uint _index, uint duration) public {
+    // duration is time in seconds for which voting is open
+    // transferVoteAllowed specifies if votes can be transfered to another person
+    function createVotingForProposal(uint _index, uint duration, bool _transferVoteAllowed) public {
         Proposal storage proposal = proposals[_index];
         require(now <= proposal.endTime);
         //overflow check
@@ -197,7 +203,8 @@ contract VotingSystem {
             approvalCount: 0,
             rejectionCount: 0,
             token: newToken,
-            endTime: now + duration
+            endTime: now + duration,
+            transferVoteAllowed: _transferVoteAllowed
         });
         
         votings.push(newVoting);
