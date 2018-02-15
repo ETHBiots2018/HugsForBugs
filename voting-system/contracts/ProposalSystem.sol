@@ -42,13 +42,13 @@ contract ProposalSystem {
         proposals.push(newProposal);
     }
     
-    function createVotingForProposal(uint _index, uint duration, bool _transferVoteAllowed) restricted public payable {
+    function createVotingForProposal(uint _index, uint duration, bool _transferVoteAllowed) public payable {
         Proposal storage proposal = proposals[_index];
         require(now <= proposal.endTime);
         //overflow check
         require(now <= now + duration);
         
-        //require(proposal.manager == msg.sender);
+        require(proposal.manager == msg.sender);
         require(proposal.numberOfApprovals >= proposal.needApprovals);
         
         vSytem.createVoting(proposal.title, proposal.description, duration, _transferVoteAllowed);
