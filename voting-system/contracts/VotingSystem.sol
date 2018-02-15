@@ -13,6 +13,7 @@ contract VotingSystem {
         uint rejectionCount;
         TokenERC20 token;
         mapping(address => bool) voters;
+        uint endTime;
     }
     
     struct Proposal {
@@ -23,6 +24,7 @@ contract VotingSystem {
         bool complete;
         uint numberOfApprovals;
         mapping(address => bool) alreadyJoined;
+        uint endTime;
     } 
     
     // system storage
@@ -57,16 +59,21 @@ contract VotingSystem {
         return votings.length;
     }
     
-    function createVoting(string title, string description) public restricted {
+    // duration is time in seconds for which voting is open
+    function createVoting(string title, string description, uint duration) public restricted {
       
+        //overflow check
+        require(now <= now + duration);
+
         TokenERC20 newToken = new TokenERC20(votersCount, "VoteCoin", "VTC");
         Voting memory newVoting = Voting({
-            title: title, 
+            title: title,
             description: description,
             complete: false,
-            approvalCount: 0, 
-            rejectionCount: 0, 
-            token: newToken
+            approvalCount: 0,
+            rejectionCount: 0,
+            token: newToken,
+            endTime: now + duration
         });
         
         votings.push(newVoting);
@@ -81,6 +88,7 @@ contract VotingSystem {
     function enterVoting(uint index) public payable {
         require(voters[msg.sender]);
         Voting storage voting = votings[index];
+        require(now <= voting.endTime);
         require(!voting.voters[msg.sender]);
         voting.token.transfer(msg.sender, 1);
         voting.voters[msg.sender] = true;
@@ -88,6 +96,7 @@ contract VotingSystem {
     
     function vote(uint index, bool value) public {
         Voting storage voting = votings[index];
+        require(now <= voting.endTime);
         
         // right and balance requirements
         uint256 currentBalance = voting.token.getBalance(msg.sender);
@@ -108,6 +117,7 @@ contract VotingSystem {
     
     function voteFor(uint _index, address _for, bool _value) public {
         Voting storage voting = votings[_index];
+        require(now <= voting.endTime);
         
         // check rights and balance
         uint256 currentBalance = voting.token.getBalance(_for);
@@ -136,6 +146,7 @@ contract VotingSystem {
      
     function transferVote(uint _index, address _to) public {
         Voting storage voting = votings[_index];
+        require(now <= voting.endTime);
         
         // check rights and balance
         uint256 currentBalance = voting.token.getBalance(msg.sender);
@@ -151,33 +162,42 @@ contract VotingSystem {
     // Proposal functions
     // =====================================
     
-    function createProposal(string title, string description, uint minimum) public {
+    // duration is time in seconds for which voting is open
+    function createProposal(string title, string description, uint minimum, uint duration) public {
+        //overflow check
+        require(now <= now + duration);
+
         Proposal memory newProposal = Proposal({
-            title: title, 
+            title: title,
             description: description,
             manager: msg.sender,
             complete: false,
-            needApprovals: minimum, 
-            numberOfApprovals: 0
+            needApprovals: minimum,
+            numberOfApprovals: 0,
+            endTime: now + duration
         });
         
         proposals.push(newProposal);
     }
     
-    function createVotingForProposal(uint _index) public {
+    function createVotingForProposal(uint _index, uint duration) public {
         Proposal storage proposal = proposals[_index];
+        require(now <= proposal.endTime);
+        //overflow check
+        require(now <= now + duration);
         
         require(proposal.manager == msg.sender);
         require(proposal.numberOfApprovals >= proposal.needApprovals);
         
         TokenERC20 newToken = new TokenERC20(votersCount, "VoteCoin", "VTC");
         Voting memory newVoting = Voting({
-            title: proposal.title, 
+            title: proposal.title,
             description: proposal.description,
             complete: false,
-            approvalCount: 0, 
-            rejectionCount: 0, 
-            token: newToken
+            approvalCount: 0,
+            rejectionCount: 0,
+            token: newToken,
+            endTime: now + duration
         });
         
         votings.push(newVoting);
@@ -189,6 +209,7 @@ contract VotingSystem {
 
     function supportProposal(uint index) public {
         Proposal storage proposal = proposals[index];
+        require(now <= proposal.endTime);
         
         require(!proposal.alreadyJoined[msg.sender]);
         
@@ -198,6 +219,8 @@ contract VotingSystem {
     
     function checkProposalStatus (uint index) public view returns (bool) {
         Proposal storage proposal = proposals[index];
+        require(now <= proposal.endTime);
+
         bool result = proposal.numberOfApprovals > proposal.needApprovals;
         return result;
     }
