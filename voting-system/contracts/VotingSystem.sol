@@ -12,6 +12,7 @@ contract VotingSystem {
         uint rejectionCount;
         uint maxVoterCount;
         uint balance;
+        uint payment;
         TokenERC20 token;
         uint endTime;
         bool complete;
@@ -47,6 +48,20 @@ contract VotingSystem {
     function VotingSystem() public {
         manager = msg.sender;
     }
+
+    function finalizeVoting(uint index) public restricted returns (uint, uint, uint) {
+        Voting storage voting = votings[index];
+        require(now > voting.endTime);
+        voting.complete = true;
+        clearBalance(index);
+        return(voting.maxVoterCount, voting.approvalCount, voting.rejectionCount);
+    }
+
+    function clearBalance(uint _index) public restricted {
+        Voting storage voting = votings[_index];
+        require(voting.complete);        
+        manager.transfer(voting.balance);
+    }
     
     // =====================================
     // Voting Functions
@@ -62,8 +77,10 @@ contract VotingSystem {
       
         //overflow check
         require(now <= now + duration);
+        require(votersCount > 0);
 
         TokenERC20 newToken = new TokenERC20(votersCount, "VoteCoin", "VTC");
+        uint p = msg.value / votersCount;
         Voting memory newVoting = Voting({
             title: title,
             description: description,
@@ -71,6 +88,7 @@ contract VotingSystem {
             rejectionCount: 0,
             maxVoterCount: votersCount,
             balance: msg.value,
+            payment: p,
             token: newToken,
             endTime: now + duration,
             complete: false,
@@ -85,7 +103,28 @@ contract VotingSystem {
         votersCount++;
         voters[voter] = true;
     }
-    
+
+    // we chose not to include this as it would give the owner power to manipulate
+    // a vote
+    /*function disableVoter(address voter, uint index) {
+         require(voters[voter]);
+         votersCount--;
+         voters[voter] = false;
+ 
+         Voting storage voting = votings[index];
+         require(now <= voting.endTime);
+         uint yesCount = voting.votes[voter].yesVotes;
+         uint noCount = voting.votes[voter].noVotes;
+ 
+         // reset voters vote counts
+         voting.votes[voter].yesVotes = 0;
+         voting.votes[voter].noVotes = 0;
+ 
+         // revert a voters votes
+         voting.approvalCount -= yesCount;
+         voting.rejectionCount -= noCount;
+    }*/
+   
     function enterVoting(uint index) public payable {
         require(voters[msg.sender]);
         Voting storage voting = votings[index];
@@ -118,7 +157,8 @@ contract VotingSystem {
         }
         
         // payment if any balance
-        msg.sender.transfer(voting.balance / voting.maxVoterCount);
+        msg.sender.transfer(voting.payment);
+        voting.balance -= voting.payment;
     }
     
     function voteFor(uint _index, address _for, bool _value) public {
@@ -146,7 +186,8 @@ contract VotingSystem {
         }
         
         // payment if any balance
-        msg.sender.transfer(voting.balance / voting.maxVoterCount);
+        msg.sender.transfer(voting.payment);
+        voting.balance -= voting.payment;
     }  
 
     function changeVote (uint index, bool fromValue, bool toValue) public {
