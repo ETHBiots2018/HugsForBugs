@@ -1,6 +1,6 @@
 const HDWalletProvider = require('truffle-hdwallet-provider');
 const Web3 = require('web3');
-const { interface, bytecode } = require('./compile');
+const { TokenERC20, ProposalSystem, VotingSystem } = require('./compile');
 
 const provider = new HDWalletProvider(
 	'moon hazard pear insect plastic grit moon wing seat squirrel wise buddy',
